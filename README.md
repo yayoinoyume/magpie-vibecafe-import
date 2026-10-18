@@ -60,6 +60,7 @@ magpie plugin add github:<你的用户名>/magpie-vibecafe-import
 |---|---|---|---|
 | `sources` | — | 全部关闭 | 每个 agent 单独开关，见下方对照表 |
 | `includeOthers` | `VIBECAFE_INCLUDE_OTHERS` | `false` | 是否把其他机器同步来的用量也算进来 |
+| `hostname` | `VIBECAFE_HOSTNAME` | 系统主机名 | 上报时用的机器名，见下方「机器名」一节 |
 | `autoUpload` | `VIBECAFE_AUTO_UPLOAD` | `true` | 关闭后只保留手动 CLI 上传 |
 | `startDate` | `VIBECAFE_START_DATE` | 无 | 忽略该日期（`YYYY-MM-DD`，UTC）之前的历史 |
 | `apiUrl` | `VIBECAFE_API_URL` | `https://vibecafe.ai` | 自建服务时改这里 |
@@ -95,6 +96,41 @@ vibecafe 服务端还没注册这些 source。开启不会报错，但数据会�
 `zed`、`vscode`、`vscode-insiders`、`vscodium`、`copilot-jetbrains`、`goose`、`raycast`、`t3code`、`lody`、`air`、`aside`、`morph`、`muse`、`hanako`、`snow`、`atomcode`、`pencil`、`openpencil`、`stepcode`、`mothx`、`omo`、`prime-agent`、`empryo`、`ante`、`astrbot`、`jcode`、`reasonix`、`commandcode`、`fx`、`magpie`、`curl`
 
 插件每次启动都会在日志里提醒这件事，不会让你白等。
+
+## 机器名
+
+vibecafe 按 `hostname` 区分机器。**一个 API key 下可以有多个机器名**，面板会分别统计。
+
+### 默认：用系统主机名
+
+插件不配置 `hostname` 时，用 `os.hostname()`。每台机器天然不同，所以：
+
+- 多台机器都装插件 → 各传各的，面板上分开显示 ✅
+- 不会因为名字冲突互相覆盖 ✅
+
+### 可选：全部归到一台
+
+如果你只想看总用量，不关心哪台机器贡献的：
+
+```json
+{ "hostname": "central-magpie" }
+```
+
+所有数据（本机 + 跨机）都归到这一个名字下，面板上只显示一台机器。
+
+**代价**：丢失「哪台机器用了多少」这个维度。
+
+### 多台都装插件时会发生什么
+
+| 配置 | 结果 |
+|---|---|
+| 都装，都不开 `includeOthers` | ✅ 各传各的，正确 |
+| 都装，都开 `includeOthers` | ⚠️ 重复上传（插件会警告） |
+| 只有一台装，开 `includeOthers` | ✅ 中心机器收齐所有 |
+
+**都装又都开跨机**时，A 会把 B 的数据传一遍，B 也把 A 的传一遍。插件启动时会检测到这种情况并警告。
+
+如果同时配置了固定 `hostname`，两份数据会落在同一个去重键下，服务端保留较大的值——**看起来没重复，实际会丢数据**。插件也会针对这一点警告。
 
 ## 多机场景
 

@@ -321,3 +321,47 @@ test('WSL agent id 归一化后能匹配', async (t) => {
   const snapshot = await aggregate(config, { now: NOW });
   assert.equal(snapshot.buckets.length, 1);
 });
+
+// ---- hostname 策略 ----
+
+test('默认用系统主机名', async (t) => {
+  const config = await setup(t, [call()]);
+  const snapshot = await aggregate(config, { now: NOW });
+  const { hostname } = await import('node:os');
+  assert.equal(snapshot.buckets[0].hostname, hostname().replace(/\.local$/, ''));
+});
+
+test('配置了 hostname 时，本机数据用该值', async (t) => {
+  const config = await setup(t, [call()]);
+  config.hostname = 'central-magpie';
+  const snapshot = await aggregate(config, { now: NOW });
+  assert.equal(snapshot.buckets[0].hostname, 'central-magpie');
+});
+
+test('配置了 hostname 时，跨机数据也归到该值', async (t) => {
+  const config = await setup(t, [call()], {
+    others: {
+      abc12345: { computer: 'abc12345', name: 'yayoi-laptop', day: '2026-03-08', calls: [call()] },
+    },
+  });
+  config.includeOthers = true;
+  config.hostname = 'central-magpie';
+
+  const snapshot = await aggregate(config, { now: NOW });
+  assert.equal(snapshot.buckets.length, 1, '两台机器合并成同一个 key');
+  assert.equal(snapshot.buckets[0].hostname, 'central-magpie');
+  assert.equal(snapshot.buckets[0].inputTokens, 200, 'token 累加');
+});
+
+test('未配置 hostname 时，跨机数据保留各自机器名', async (t) => {
+  const config = await setup(t, [call()], {
+    others: {
+      abc12345: { computer: 'abc12345', name: 'yayoi-laptop', day: '2026-03-08', calls: [call()] },
+    },
+  });
+  config.includeOthers = true;
+
+  const snapshot = await aggregate(config, { now: NOW });
+  assert.equal(snapshot.buckets.length, 2, '两台机器分开');
+  assert.deepEqual(snapshot.otherComputers, ['yayoi-laptop']);
+});

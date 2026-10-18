@@ -79,3 +79,21 @@ test('默认路径基于 magpie 目录', () => {
   assert.equal(config.othersDir, '/custom/magpie/usage-others');
   assert.equal(config.stateDir, '/custom/magpie/vibecafe-import');
 });
+
+test('hostname 默认未设置（用系统主机名）', () => {
+  const config = configuration({}, '/tmp/magpie');
+  assert.equal(config.hostname, undefined);
+});
+
+test('hostname 可以显式指定', () => {
+  const config = configuration({ hostname: 'central-magpie' }, '/tmp/magpie');
+  assert.equal(config.hostname, 'central-magpie');
+});
+
+test('hostname 必须非空', () => {
+  assert.throws(() => configuration({ hostname: '   ' }, '/tmp/magpie'), /非空字符串/);
+});
+
+test('hostname 不能超过 200 字符', () => {
+  assert.throws(() => configuration({ hostname: 'x'.repeat(201) }, '/tmp/magpie'), /200 字符/);
+});

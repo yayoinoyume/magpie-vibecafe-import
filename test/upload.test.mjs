@@ -249,3 +249,49 @@ test('超过 100 个桶时分批上传', async (t) => {
   assert.equal(mock.received.length, 3, '250 个桶 → 3 批');
   assert.equal(result.submitted, 250);
 });
+
+test('跨机数据触发重复上传警告', async (t) => {
+  const mock = await mockServer(t);
+  const config = await setup(t, [call()]);
+  config.apiUrl = mock.url;
+  config.includeOthers = true;
+  useKey(t, 'vbu_test');
+
+  // 造一个跨机目录
+  const { mkdir, writeFile } = await import('node:fs/promises');
+  const dir = join(config.magpieDir, 'usage-others', 'abc12345');
+  await mkdir(dir, { recursive: true });
+  await writeFile(join(dir, '2026-10-16.json'), JSON.stringify({
+    computer: 'abc12345', name: 'other-laptop', day: '2026-10-16',
+    calls: [call({ t: '2026-10-16T15:00:00Z' })],
+  }));
+
+  const result = await run(config, { now: NOW });
+  assert.ok(
+    result.warnings.some((w) => w.includes('其他机器') && w.includes('两次')),
+    '必须警告跨机数据可能重复上传',
+  );
+});
+
+test('配置固定 hostname 时，跨机警告说明会合并覆盖', async (t) => {
+  const mock = await mockServer(t);
+  const config = await setup(t, [call()]);
+  config.apiUrl = mock.url;
+  config.includeOthers = true;
+  config.hostname = 'central-magpie';
+  useKey(t, 'vbu_test');
+
+  const { mkdir, writeFile } = await import('node:fs/promises');
+  const dir = join(config.magpieDir, 'usage-others', 'abc12345');
+  await mkdir(dir, { recursive: true });
+  await writeFile(join(dir, '2026-10-16.json'), JSON.stringify({
+    computer: 'abc12345', name: 'other-laptop', day: '2026-10-16',
+    calls: [call({ t: '2026-10-16T15:00:00Z' })],
+  }));
+
+  const result = await run(config, { now: NOW });
+  assert.ok(
+    result.warnings.some((w) => w.includes('固定 hostname') && w.includes('覆盖')),
+    '必须说明固定 hostname 的覆盖风险',
+  );
+});
