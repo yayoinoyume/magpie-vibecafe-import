@@ -365,3 +365,32 @@ test('未配置 hostname 时，跨机数据保留各自机器名', async (t) => 
   assert.equal(snapshot.buckets.length, 2, '两台机器分开');
   assert.deepEqual(snapshot.otherComputers, ['yayoi-laptop']);
 });
+
+test('跨机文件的 calls 为空时，不计入 otherComputers', async (t) => {
+  const config = await setup(t, [call()], {
+    others: {
+      empty123: { computer: 'empty123', name: 'idle-machine', day: '2026-03-08', calls: [] },
+    },
+  });
+  config.includeOthers = true;
+
+  const snapshot = await aggregate(config, { now: NOW });
+  assert.deepEqual(snapshot.otherComputers, [], '没有实际贡献数据的机器不该出现在警告里');
+});
+
+test('跨机数据全被过滤时，不计入 otherComputers', async (t) => {
+  const config = await setup(t, [call()], {
+    others: {
+      filtered1: {
+        computer: 'filtered1', name: 'filtered-machine', day: '2026-03-08',
+        // 全部是未来日期，会被过滤掉
+        calls: [call({ t: '2026-03-10T00:00:01Z' })],
+      },
+    },
+  });
+  config.includeOthers = true;
+
+  const snapshot = await aggregate(config, { now: NOW });
+  assert.equal(snapshot.diagnostics.future, 1, '确实被过滤了');
+  assert.deepEqual(snapshot.otherComputers, [], '被过滤的机器不该计入');
+});
