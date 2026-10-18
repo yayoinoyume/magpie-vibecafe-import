@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Magpie to Vibecafe">
+  <rect width="64" height="64" rx="14" fill="#1a1a1f"/>
+  <!-- 上行箭头：从本地上报到云端 -->
+  <path d="M32 14 L44 28 H37 V40 H27 V28 H20 Z" fill="#5eead4"/>
+  <!-- 三个数据点：代表多台机器 -->
+  <circle cx="16" cy="48" r="3.2" fill="#5eead4" opacity=".55"/>
+  <circle cx="32" cy="48" r="3.2" fill="#5eead4" opacity=".8"/>
+  <circle cx="48" cy="48" r="3.2" fill="#5eead4"/>
+</svg>

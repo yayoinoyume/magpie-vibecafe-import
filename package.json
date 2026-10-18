@@ -1,0 +1,44 @@
+{
+  "name": "magpie-vibecafe-import",
+  "version": "0.1.0",
+  "description": "Upload Magpie usage to vibecafe.ai / vibe-usage, per tool, off by default.",
+  "type": "module",
+  "main": "./index.mjs",
+  "exports": {
+    ".": "./index.mjs",
+    "./server": "./index.mjs"
+  },
+  "bin": {
+    "magpie-vibecafe-import": "./cli.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "cli.mjs",
+    "lib/"
+  ],
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "magpie",
+    "magpie-plugin",
+    "vibe-usage",
+    "vibecafe",
+    "usage",
+    "tokens"
+  ],
+  "license": "MIT",
+  "dependencies": {},
+  "magpie": {
+    "maxConcurrency": 1,
+    "icon": "./assets/icon.svg",
+    "options": {
+      "sources": {},
+      "includeOthers": false,
+      "autoUpload": true
+    }
+  }
+}
