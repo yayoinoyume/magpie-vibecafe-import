@@ -1,0 +1,168 @@
+/* 只补 magpie 没给的排版；颜色一律走 --magpie-* 变量，
+   bridge.js 已经注入了这些变量，明暗主题自动跟随。 */
+
+body {
+  margin: 0;
+  padding: 16px 20px 28px;
+  max-width: 720px;
+}
+
+header h1 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.summary {
+  margin: 0 0 18px;
+  color: var(--magpie-muted, GrayText);
+  line-height: 1.5;
+}
+
+.group {
+  margin-bottom: 20px;
+}
+
+.group-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.group-head h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.group-head .count {
+  color: var(--magpie-muted, GrayText);
+  font-size: 12px;
+}
+
+.group-hint {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--magpie-muted, GrayText);
+  line-height: 1.5;
+}
+
+/* 左侧色条区分三类，不靠颜色单独承载信息 —— 标题文字已说明。 */
+.group[data-tone="warn"] .group-head h2 { color: var(--magpie-warn, #b45309); }
+.group[data-tone="ok"]   .group-head h2 { color: var(--magpie-accent, #0f766e); }
+.group[data-tone="bad"]  .group-head h2 { color: var(--magpie-muted, GrayText); }
+
+.items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.items label {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 3px 4px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.items label:hover {
+  background: var(--magpie-card, rgba(127, 127, 127, 0.08));
+}
+
+.items input {
+  margin: 0;
+  flex: none;
+  accent-color: var(--magpie-accent, Highlight);
+}
+
+.items .name {
+  font-size: 13px;
+}
+
+.items .src {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--magpie-muted, GrayText);
+  font-family: var(--magpie-code, ui-monospace, monospace);
+}
+
+.group[data-tone="bad"] .items .name {
+  color: var(--magpie-muted, GrayText);
+}
+
+.row.other {
+  margin: 22px 0 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--magpie-line, rgba(127, 127, 127, 0.3));
+  border-radius: 8px;
+}
+
+.row.other label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.row.other small {
+  display: block;
+  margin-top: 6px;
+  color: var(--magpie-muted, GrayText);
+  line-height: 1.5;
+}
+
+footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  bottom: 0;
+  padding: 10px 0;
+  background: var(--magpie-bg, Canvas);
+}
+
+#save {
+  padding: 6px 18px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.status {
+  font-size: 12px;
+  color: var(--magpie-muted, GrayText);
+}
+
+.status.ok { color: var(--magpie-accent, #0f766e); }
+.status.err { color: var(--magpie-warn, #b45309); }
+
+.help {
+  margin-top: 26px;
+  font-size: 12px;
+  color: var(--magpie-muted, GrayText);
+}
+
+.help summary {
+  cursor: pointer;
+}
+
+.help dl {
+  margin: 10px 0 0;
+}
+
+.help dt {
+  margin-top: 8px;
+  color: var(--magpie-fg, CanvasText);
+  font-weight: 500;
+}
+
+.help dd {
+  margin: 2px 0 0;
+  line-height: 1.55;
+}

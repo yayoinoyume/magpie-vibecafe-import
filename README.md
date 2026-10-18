@@ -18,25 +18,47 @@
 
 ```sh
 magpie plugin add github:yayoinoyume/magpie-vibecafe-import
-magpie plugin login vibecafe-import
-magpie plugin options magpie-vibecafe-import '{"sources":{"claude":true}}'
 ```
+
+然后在 magpie 界面里：
+
+1. **Plugins → Vibecafe Import → Sign in** 填入 API key
+2. 打开 **Vibecafe 导入** 页面，勾选想导出的工具
+3. 点保存
 
 密钥创建地址：<https://vibecafe.ai/usage/setup>（形如 `vbu_...`）。
 
-**登录不会立刻上传任何数据。** 还需要在配置里打开具体的工具。
+**登录不会立刻上传任何数据。** 还需要在页面上勾选具体的工具。
 
 首次安装想逐步确认每一步？看 **[真机验证清单](docs/TESTING.md)**。
 
 ## 配置
 
-编辑 magpie 的 `plugins.json`，找到本插件那一项，在 `options.sources` 里打开想导的工具：
+**在 magpie 界面里配置。** 打开侧边栏的 **Vibecafe 导入** 页面，勾选想导出的工具，点保存。
+
+页面把 68 个工具分成三组，每组都写了说明：
+
+| 分组 | 含义 |
+|---|---|
+| 会与 vibe-usage 重复 | vibe-usage 自己也读这些工具，同时开会翻倍 |
+| 可安全开启 | vibe-usage 不读，开了不重复 |
+| 暂时导不进去 | 服务端没注册，开了也白开 |
+
+### 命令行配置（可选）
+
+不想用界面，也可以直接改配置：
+
+```sh
+magpie plugin options magpie-vibecafe-import '{"sources":{"claude":true,"codex":true}}'
+```
+
+或者编辑 magpie 的 `plugins.json`：
 
 ```json
 {
   "plugins": [
     {
-      "spec": "github:yourname/magpie-vibecafe-import",
+      "spec": "github:yayoinoyume/magpie-vibecafe-import",
       "options": {
         "sources": {
           "claude": true,

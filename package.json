@@ -16,11 +16,13 @@
     "cli.mjs",
     "lib/",
     "scripts/",
-    "assets/"
+    "assets/",
+    "page/"
   ],
   "scripts": {
     "test": "node --test",
-    "selftest": "node scripts/selftest.mjs"
+    "selftest": "node scripts/selftest.mjs",
+    "build:catalog": "node scripts/build-page-catalog.mjs"
   },
   "engines": {
     "node": ">=20"
@@ -38,6 +40,17 @@
   "magpie": {
     "maxConcurrency": 1,
     "icon": "./assets/icon.svg",
+    "page": {
+      "title": "Vibecafe Import",
+      "titles": {
+        "zh": "Vibecafe 导入",
+        "zh-TW": "Vibecafe 匯入",
+        "ja": "Vibecafe インポート",
+        "de": "Vibecafe-Import"
+      },
+      "file": "page/index.html",
+      "icon": "page/icon.svg"
+    },
     "options": {
       "sources": {},
       "includeOthers": false,

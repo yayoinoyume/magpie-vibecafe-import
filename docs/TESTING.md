@@ -155,18 +155,49 @@ export VIBECAFE_API_KEY=vbu_你的key
 
 ---
 
-## 步骤 6：开启想导入的工具
+## 步骤 6：在界面里开启工具
 
 **关键一步。默认一个都不开。**
 
-```sh
-magpie plugin options magpie-vibecafe-import '{"sources":{"claude":true}}'
+打开 magpie 侧边栏的 **Vibecafe 导入** 页面。
+
+页面长这样：
+
+```
+Vibecafe Import
+已开启 0 个工具。
+
+会与 vibe-usage 重复 0/36
+  vibe-usage 自己会读这些工具的日志。同时开启会让面板数字翻倍。
+  ☐ Antigravity CLI   antigravity
+  ☐ Claude Code       claude-code
+  ☐ Codex             codex
+  ...
+
+可安全开启 0/1
+  ☐ Crush             crush
+
+暂时导不进去 0/31
+  vibecafe 服务端还没注册这些 source，开启后数据会被静默丢弃。
+  ☐ JetBrains Air     —
+  ☐ Zed               —
+  ...
+
+☐ 包含其他机器的数据
+
+[保存]
 ```
 
-要开多个：
+勾选你想要的工具，点 **保存**。
+
+顶部的摘要会实时变化，告诉你开了几个、其中几个会重复。
+
+### 如果页面打不开
+
+用命令行代替：
 
 ```sh
-magpie plugin options magpie-vibecafe-import '{"sources":{"claude":true,"codex":true}}'
+magpie plugin options magpie-vibecafe-import '{"sources":{"claude":true}}'
 ```
 
 确认配置生效：

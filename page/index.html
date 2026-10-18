@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vibecafe Import</title>
+<link rel="stylesheet" href="style.css">
+<script src="_magpie/bridge.js"></script>
+<script src="view.js"></script>
+<script src="catalog.js"></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<header>
+  <h1>Vibecafe Import</h1>
+  <p class="summary" id="summary">正在读取配置…</p>
+</header>
+
+<main id="groups"></main>
+
+<section class="row other">
+  <label>
+    <input type="checkbox" id="includeOthers">
+    <span>包含其他机器的数据</span>
+  </label>
+  <small>其他机器通过 magpie 同步过来的用量。如果那些机器也装了本插件，会重复上传。</small>
+</section>
+
+<footer>
+  <button type="button" id="save">保存</button>
+  <span class="status" id="status" role="status"></span>
+</footer>
+
+<details class="help">
+  <summary>这些分类是什么意思？</summary>
+  <dl>
+    <dt>会与 vibe-usage 重复</dt>
+    <dd>vibe-usage 自己也读这些工具的日志。如果你在同时用它，两边都会算一次。</dd>
+    <dt>可安全开启</dt>
+    <dd>vibe-usage 不读这些工具，开了不会重复。</dd>
+    <dt>暂时导不进去</dt>
+    <dd>vibecafe 还没收录这些工具的来源标识。开启不会报错，但数据会被丢弃。</dd>
+  </dl>
+</details>
+</body>
+</html>
