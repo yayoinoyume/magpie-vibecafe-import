@@ -32,11 +32,15 @@ export default {
     };
 
     return {
-      async config(config) {
-        // 注册成一个 provider，这样 magpie 的插件列表里能看到登录入口。
-        // 本插件不提供模型，models 为空。
-        config.provider ??= {};
-        config.provider[AUTH_PROVIDER] ??= { name: 'Vibecafe Import', models: {} };
+      async config() {
+        // 刻意不注册 config.provider。
+        //
+        // 本插件不提供任何模型，注册成供应商会让供应商列表里多一个
+        // 没有模型的假条目，用户还会误以为要从那里选模型。
+        //
+        // 登录入口不依赖 config.provider：magpie 的 providers() 遍历的是
+        // 有 auth hook 的插件（host.js 的 auths()），只要下面还返回 auth
+        // 就能登录，密钥照样存进 plugin-auth.json。
 
         const enabled = enabledAgents(settings.sources);
         const ineffective = ineffectiveAgents(settings.sources);
@@ -89,6 +93,9 @@ export default {
         );
       },
 
+      // 登录入口：magpie 靠这个 hook 知道本插件有一个叫 vibecafe-import
+      // 的账号，密钥存进 plugin-auth.json（权限 600）。
+      // 它不要求插件同时注册 config.provider。
       auth: {
         provider: AUTH_PROVIDER,
         methods: [{

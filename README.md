@@ -26,6 +26,9 @@ magpie plugin add github:yayoinoyume/magpie-vibecafe-import
 2. 打开 **Vibecafe 导入** 页面，勾选想导出的工具
 3. 点保存
 
+> **本插件不出现在模型供应商列表里。** 它不提供任何模型，只是把用量数据转发出去。
+> 登录入口是独立的，不会让你在选模型时看到它。
+
 密钥创建地址：<https://vibecafe.ai/usage/setup>（形如 `vbu_...`）。
 
 **登录不会立刻上传任何数据。** 还需要在页面上勾选具体的工具。
