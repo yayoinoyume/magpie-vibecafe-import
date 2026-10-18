@@ -17,13 +17,16 @@
 ## 安装
 
 ```sh
-magpie plugin add github:<你的用户名>/magpie-vibecafe-import
+magpie plugin add github:yayoinoyume/magpie-vibecafe-import
+magpie plugin login vibecafe-import
+magpie plugin options magpie-vibecafe-import '{"sources":{"claude":true}}'
 ```
 
-插件装好后，在 magpie 的 **Plugins → Vibecafe Import → Sign in** 里填入 API key。
 密钥创建地址：<https://vibecafe.ai/usage/setup>（形如 `vbu_...`）。
 
 **登录不会立刻上传任何数据。** 还需要在配置里打开具体的工具。
+
+首次安装想逐步确认每一步？看 **[真机验证清单](docs/TESTING.md)**。
 
 ## 配置
 
