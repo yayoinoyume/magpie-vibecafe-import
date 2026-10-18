@@ -114,7 +114,7 @@ test('换账号：状态清空并标记 identityChanged', async (t) => {
   assert.deepEqual(reloaded.buckets, {}, '新账号不能继承旧账号的检查点');
 });
 
-test('状态文件损坏：当作空，触发重传', async (t) => {
+test('状态文件 JSON 损坏：当作空，触发重传', async (t) => {
   const config = await setup(t);
   const { writeFile, mkdir } = await import('node:fs/promises');
   await mkdir(config.stateDir, { recursive: true });
@@ -123,6 +123,24 @@ test('状态文件损坏：当作空，触发重传', async (t) => {
   const state = await loadState(config, stateIdentity({ apiUrl: config.apiUrl, token: 'vbu_test' }));
   assert.deepEqual(state.buckets, {});
   assert.equal(state.corrupt, true);
+});
+
+test('状态文件权限错误：抛出，不伪装成损坏', async (t) => {
+  if (process.platform === 'win32') return; // Windows 权限模型不同
+  const config = await setup(t);
+  const { writeFile, mkdir, chmod } = await import('node:fs/promises');
+  await mkdir(config.stateDir, { recursive: true });
+  const file = join(config.stateDir, 'state.json');
+  await writeFile(file, '{}');
+  await chmod(file, 0o000);
+
+  await assert.rejects(
+    () => loadState(config, stateIdentity({ apiUrl: config.apiUrl, token: 'vbu_test' })),
+    /无法读取上传状态/,
+    'EACCES 必须暴露，否则会被误判成损坏并触发全量重传',
+  );
+
+  await chmod(file, 0o600); // 让清理能删掉
 });
 
 test('pruneState 只清理本次解析成功的 source', async (t) => {

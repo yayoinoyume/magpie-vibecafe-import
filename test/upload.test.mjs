@@ -23,6 +23,12 @@ function call(overrides = {}) {
   };
 }
 
+/** 设置密钥并在测试结束后清理 —— 断言失败也不会泄漏到后续测试。 */
+function useKey(t, value) {
+  process.env.VIBECAFE_API_KEY = value;
+  t.after(() => { delete process.env.VIBECAFE_API_KEY; });
+}
+
 /** 起一个假 ingest 服务，记录收到的请求。 */
 async function mockServer(t, handler) {
   const received = [];
@@ -67,12 +73,11 @@ test('没有开启任何 agent：不上传，返回 nothing-enabled', async (t) 
   const mock = await mockServer(t);
   const config = await setup(t, [call()], []);
   config.apiUrl = mock.url;
-  process.env.VIBECAFE_API_KEY = 'vbu_test';
+  useKey(t, 'vbu_test');
 
   const result = await run(config, { now: NOW });
   assert.equal(result.status, 'nothing-enabled');
   assert.equal(mock.received.length, 0, '一条请求都不该发');
-  delete process.env.VIBECAFE_API_KEY;
 });
 
 test('没有登录：不上传，返回 not-configured', async (t) => {
@@ -89,7 +94,7 @@ test('正常上传：gzip + Bearer + 正确的桶', async (t) => {
   const mock = await mockServer(t);
   const config = await setup(t, [call()]);
   config.apiUrl = mock.url;
-  process.env.VIBECAFE_API_KEY = 'vbu_test';
+  useKey(t, 'vbu_test');
 
   const result = await run(config, { now: NOW });
   assert.equal(result.status, 'complete');
@@ -102,23 +107,37 @@ test('正常上传：gzip + Bearer + 正确的桶', async (t) => {
   assert.equal(req.body.buckets.length, 1);
   assert.equal(req.body.buckets[0].source, 'claude-code');
   assert.equal(req.body.buckets[0].totalTokens, 160);
+});
 
-  delete process.env.VIBECAFE_API_KEY;
+test('date 参数只上传指定日期的桶', async (t) => {
+  const mock = await mockServer(t);
+  const config = await setup(t, [
+    call({ t: '2026-10-15T10:05:00Z' }),
+    call({ t: '2026-10-16T10:05:00Z' }),
+  ]);
+  config.apiUrl = mock.url;
+  useKey(t, 'vbu_test');
+
+  const result = await run(config, { now: NOW, date: '2026-10-15' });
+  assert.equal(result.status, 'complete');
+  assert.equal(result.submitted, 1, '只上传 10-15 那一个桶');
+
+  const sent = mock.received[0].body.buckets;
+  assert.equal(sent.length, 1);
+  assert.ok(sent[0].bucketStart.startsWith('2026-10-15'), '日期必须被透传到 aggregate');
 });
 
 test('第二次运行：无变化则不再上传', async (t) => {
   const mock = await mockServer(t);
   const config = await setup(t, [call()]);
   config.apiUrl = mock.url;
-  process.env.VIBECAFE_API_KEY = 'vbu_test';
+  useKey(t, 'vbu_test');
 
   await run(config, { now: NOW });
   const second = await run(config, { now: NOW });
 
   assert.equal(second.status, 'unchanged');
   assert.equal(mock.received.length, 1, '只有第一次发了请求');
-
-  delete process.env.VIBECAFE_API_KEY;
 });
 
 test('服务端丢弃未知 source：记账跳过，并给出明确警告', async (t) => {
@@ -128,7 +147,7 @@ test('服务端丢弃未知 source：记账跳过，并给出明确警告', asyn
   }));
   const config = await setup(t, [call()]);
   config.apiUrl = mock.url;
-  process.env.VIBECAFE_API_KEY = 'vbu_test';
+  useKey(t, 'vbu_test');
 
   const result = await run(config, { now: NOW });
   assert.equal(result.dropped.buckets, 1);
@@ -142,8 +161,6 @@ test('服务端丢弃未知 source：记账跳过，并给出明确警告', asyn
   const second = await run(config, { now: NOW });
   assert.equal(second.status, 'complete', '仍会重传被丢弃的桶');
   assert.equal(mock.received.length, 2);
-
-  delete process.env.VIBECAFE_API_KEY;
 });
 
 test('401：返回 auth-blocked，不上报成功', async (t) => {
@@ -157,12 +174,10 @@ test('401：返回 auth-blocked，不上报成功', async (t) => {
 
   const config = await setup(t, [call()]);
   config.apiUrl = `http://127.0.0.1:${port}`;
-  process.env.VIBECAFE_API_KEY = 'vbu_bad';
+  useKey(t, 'vbu_bad');
 
   const result = await run(config, { now: NOW });
   assert.equal(result.status, 'auth-blocked');
-
-  delete process.env.VIBECAFE_API_KEY;
 });
 
 test('服务端保留更大值：给出 protected 警告', async (t) => {
@@ -172,13 +187,11 @@ test('服务端保留更大值：给出 protected 警告', async (t) => {
   }));
   const config = await setup(t, [call()]);
   config.apiUrl = mock.url;
-  process.env.VIBECAFE_API_KEY = 'vbu_test';
+  useKey(t, 'vbu_test');
 
   const result = await run(config, { now: NOW });
   assert.equal(result.protected, 1);
   assert.ok(result.warnings.some((w) => w.includes('更大的已有桶')));
-
-  delete process.env.VIBECAFE_API_KEY;
 });
 
 test('超过 100 个桶时分批上传', async (t) => {
@@ -194,11 +207,9 @@ test('超过 100 个桶时分批上传', async (t) => {
   }
   const config = await setup(t, records);
   config.apiUrl = mock.url;
-  process.env.VIBECAFE_API_KEY = 'vbu_test';
+  useKey(t, 'vbu_test');
 
   const result = await run(config, { now: NOW });
   assert.equal(mock.received.length, 3, '250 个桶 → 3 批');
   assert.equal(result.submitted, 250);
-
-  delete process.env.VIBECAFE_API_KEY;
 });

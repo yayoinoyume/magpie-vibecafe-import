@@ -189,6 +189,30 @@ test('坏 JSON 行被跳过，不影响其他行', async (t) => {
   assert.equal(snapshot.diagnostics.malformed, 1);
 });
 
+test('usage.jsonl 不存在时安静返回，不抛错', async (t) => {
+  // 真实场景：用户开了 agent，但 magpie 还没产生第一次调用。
+  const dir = await mkdtemp(join(tmpdir(), 'vibecafe-import-test-'));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const magpieDir = join(dir, 'magpie');
+  await mkdir(magpieDir, { recursive: true });
+  // 故意不创建 usage.jsonl
+
+  const sources = defaultSources();
+  sources.claude.enabled = true;
+  const config = {
+    magpieDir,
+    usageFile: join(magpieDir, 'usage.jsonl'),
+    othersDir: join(magpieDir, 'usage-others'),
+    stateDir: join(magpieDir, 'vibecafe-import'),
+    apiUrl: 'https://vibecafe.ai',
+    sources, includeOthers: false,
+  };
+
+  const snapshot = await aggregate(config, { now: NOW });
+  assert.equal(snapshot.buckets.length, 0, '没有文件就是没有数据，不是错误');
+  assert.equal(snapshot.diagnostics.records, 0);
+});
+
 test('不完整的末行（正在写入）被忽略', async (t) => {
   const dir = await mkdtemp(join(tmpdir(), 'vibecafe-import-test-'));
   t.after(() => rm(dir, { recursive: true, force: true }));

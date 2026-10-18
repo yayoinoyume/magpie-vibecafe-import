@@ -171,10 +171,13 @@ npx magpie-vibecafe-import account
 ## 开发
 
 ```sh
-node --test "test/*.test.mjs"
+npm test          # 等价于 node --test
 ```
 
 需要 Node.js 20 或更高版本。无第三方依赖。
+
+> 注意：`node --test test/`（目录参数）在 Node 24 上会报 MODULE_NOT_FOUND，
+> 用 `node --test` 或 `node --test "test/*.test.mjs"`。
 
 ## 许可
 

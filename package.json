@@ -17,7 +17,7 @@
     "lib/"
   ],
   "scripts": {
-    "test": "node --test test/"
+    "test": "node --test"
   },
   "engines": {
     "node": ">=20"
