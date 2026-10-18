@@ -88,7 +88,6 @@ async function main() {
 
   const command = positionals[0];
 
-  // sources 命令不需要配置，直接输出映射表。
   if (command === 'sources') {
     const { duplicated, exclusive, unmappable } = classifyAgents();
     if (values.json) {
