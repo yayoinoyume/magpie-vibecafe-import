@@ -166,7 +166,8 @@ npx magpie-vibecafe-import account
 1. **没有项目维度。** magpie 不记录调用来自哪个项目目录，所有数据都归到 `unknown`。vibe-usage 直读日志时有项目名，所以同一个工具两边导入后，项目维度的统计不会合并。
 2. **当前 UTC 日的用量不上传。** 只导入已完成的日期，避免当天数据反复变动。
 3. **服务端丢弃 source 时无法补传。** 等 vibe-cafe 上游注册对应 source 后，重新运行 `submit` 即可补上——被丢弃的桶不会记账。
-4. **`out` 字段包含 reasoning。** 插件会减掉，但如果 magpie 未来改了语义，会导致少算。这一点有测试覆盖。
+4. **模型名不在价格表里会被静默丢弃。** 实测确认：服务端返回 `200` 且 `ingested` 计数正常，但数据不落库。插件会检测这种情况（发送量与 `ingested` 对不上且无 `dropped` 解释），告警并跳过记账，下次自动重试。但如果服务端始终不收录该模型，这些数据会一直重试、一直不成功。
+5. **`out` 字段包含 reasoning。** 插件会减掉，但如果 magpie 未来改了语义，会导致少算。这一点有测试覆盖。
 
 ## 开发
 
@@ -178,6 +179,24 @@ npm test          # 等价于 node --test
 
 > 注意：`node --test test/`（目录参数）在 Node 24 上会报 MODULE_NOT_FOUND，
 > 用 `node --test` 或 `node --test "test/*.test.mjs"`。
+
+### 对真实服务端自检
+
+```sh
+VIBECAFE_API_KEY=vbu_xxx npm run selftest
+```
+
+这个脚本会真的往服务端写一次数据，但**保证清理干净**：
+
+1. 用一个随机后缀的 `vibecafe-selftest-xxxxxxxx` 作为 hostname，并**先断言它不存在于你的账号数据里**
+2. 只上传 1 个桶、2 个 token，模型名用真实存在的
+3. 确认数据落库、12 个字段全部返回
+4. `finally` 里按 hostname 精确删除（`DELETE /api/usage/ingest?hostname=`）
+5. 再查一次，确认沙箱数据为 0，并打印真实数据桶数供比对
+
+不会碰你的真实用量。加 `--keep` 可以保留数据人工检查，脚本会打印手动删除命令。
+
+**为什么模型名必须真实**：实测发现，模型名不在 vibecafe 价格表里时，服务端返回 `200`、`ingested` 计数正常，但数据**不落库**。插件因此加了「静默丢弃」检测——发送量与 `ingested` 对不上且没有 `dropped` 解释时，会告警并**不记账**，下次自动重试。
 
 ## 许可
 

@@ -180,6 +180,42 @@ test('401：返回 auth-blocked，不上报成功', async (t) => {
   assert.equal(result.status, 'auth-blocked');
 });
 
+test('服务端静默丢弃（ingested 少于发送量且无 dropped）：必须告警且不记账', async (t) => {
+  // 实测行为：模型名不在价格表里时，服务端返回 200、ingested 计数正常，
+  // 但数据不落库。这是最难排查的失败，插件必须说出来。
+  const mock = await mockServer(t, () => ({ ingested: 0 }));
+  const config = await setup(t, [call()]);
+  config.apiUrl = mock.url;
+  useKey(t, 'vbu_test');
+
+  const result = await run(config, { now: NOW });
+  assert.equal(result.silent.buckets, 1, '必须识别出 1 个桶被静默丢弃');
+  assert.ok(
+    result.warnings.some((w) => w.includes('上传成功但未落库')),
+    '必须给出明确警告，否则用户永远查不出数据去哪了',
+  );
+  assert.ok(
+    result.warnings.some((w) => w.includes('claude-sonnet-5')),
+    '警告里应带上模型名，方便排查',
+  );
+});
+
+test('静默丢弃的桶不记账，下次会重试', async (t) => {
+  const config = await setup(t, [call()]);
+  useKey(t, 'vbu_test');
+
+  const mock = await mockServer(t, () => ({ ingested: 0 }));
+  config.apiUrl = mock.url;
+  await run(config, { now: NOW });
+
+  // 第二次仍会重传（因为没记账）
+  const mock2 = await mockServer(t, () => ({ ingested: 1 }));
+  config.apiUrl = mock2.url;
+  const second = await run(config, { now: NOW });
+  assert.equal(second.status, 'complete');
+  assert.equal(mock2.received.length, 1, '未被记账的桶必须重传');
+});
+
 test('服务端保留更大值：给出 protected 警告', async (t) => {
   const mock = await mockServer(t, () => ({
     ingested: 1,

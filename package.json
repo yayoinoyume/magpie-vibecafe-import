@@ -14,10 +14,13 @@
   "files": [
     "index.mjs",
     "cli.mjs",
-    "lib/"
+    "lib/",
+    "scripts/",
+    "assets/"
   ],
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "selftest": "node scripts/selftest.mjs"
   },
   "engines": {
     "node": ">=20"
